@@ -25,6 +25,11 @@ public sealed class ChannelState
         public required string Id { get; init; }
         public string? MyClientId { get; set; }
         public Dictionary<string, Client> Clients { get; } = new();
+        public string? LastLeftClientId { get; set; }
+        public string? LastLeftNickname { get; set; }
+
+        public string? MyChannelId =>
+            MyClientId is not null && Clients.TryGetValue(MyClientId, out var me) ? me.ChannelId : null;
     }
 
     private readonly object _lock = new();
@@ -56,6 +61,20 @@ public sealed class ChannelState
                 .OrderBy(c => c.Nickname, StringComparer.CurrentCultureIgnoreCase)
                 .Select(c => new ClientInfo(conn.Id, c.Id, c.Nickname, c.Talking, c.InputMuted, c.OutputMuted, c.Id == conn.MyClientId))
                 .ToList();
+        }
+    }
+
+    /// <summary>Apelido do último que saiu do meu canal, ou null. Zera quando eu troco de canal.</summary>
+    public string? GetLastLeft()
+    {
+        lock (_lock)
+        {
+            if (_activeConnectionId is null || !_connections.TryGetValue(_activeConnectionId, out var conn)
+                || conn.MyChannelId is null)
+            {
+                return null;
+            }
+            return conn.LastLeftNickname;
         }
     }
 
@@ -141,6 +160,26 @@ public sealed class ChannelState
 
         var conn = GetOrAddConnection(connId);
         var newChannelId = payload.GetId("newChannelId");
+        var myChannelId = conn.MyChannelId;
+        conn.Clients.TryGetValue(clientId, out var client);
+
+        if (clientId == conn.MyClientId)
+        {
+            // Canal novo, lista nova: quem saiu do canal antigo não interessa mais
+            if (newChannelId != myChannelId) ClearLastLeft(conn);
+        }
+        else if (client is not null && myChannelId is not null)
+        {
+            if (client.ChannelId == myChannelId && newChannelId != myChannelId)
+            {
+                conn.LastLeftClientId = clientId;
+                conn.LastLeftNickname = client.Nickname;
+            }
+            else if (newChannelId == myChannelId && conn.LastLeftClientId == clientId)
+            {
+                ClearLastLeft(conn); // voltou
+            }
+        }
 
         // newChannelId 0 = saiu do servidor
         if (newChannelId is null)
@@ -148,7 +187,7 @@ public sealed class ChannelState
             return conn.Clients.Remove(clientId);
         }
 
-        if (!conn.Clients.TryGetValue(clientId, out var client))
+        if (client is null)
         {
             client = new Client { Id = clientId };
             conn.Clients[clientId] = client;
@@ -210,6 +249,12 @@ public sealed class ChannelState
             return client;
         }
         return null;
+    }
+
+    private static void ClearLastLeft(Connection conn)
+    {
+        conn.LastLeftClientId = null;
+        conn.LastLeftNickname = null;
     }
 
     private Connection GetOrAddConnection(string connId)
