@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Windows.Forms;
@@ -62,12 +61,6 @@ internal sealed class TrayIcon : IDisposable
             _settings.OnlyTalking = !_settings.OnlyTalking;
             _window.ApplySettings();
         }));
-        menu.Items.Add(Check("Mostrar só nos apps escolhidos", _settings.ShowOnlyInApps, () =>
-        {
-            _settings.ShowOnlyInApps = !_settings.ShowOnlyInApps;
-            _window.ApplySettings();
-        }));
-        menu.Items.Add(BuildAppsMenu());
         menu.Items.Add(Check("Iniciar com o Windows", StartupRegistration.IsEnabled, () =>
             StartupRegistration.SetEnabled(!StartupRegistration.IsEnabled)));
         menu.Items.Add(new ToolStripSeparator());
@@ -86,54 +79,6 @@ internal sealed class TrayIcon : IDisposable
             ? $"TS Overlay v{_updater.CurrentVersion}"
             : $"TS Overlay v{_updater.CurrentVersion} (sem atualização automática fora do instalador)";
         return new ToolStripMenuItem(text) { Enabled = false };
-    }
-
-    /// <summary>Apps abertos agora e os já salvos; marcado = o overlay aparece nele.</summary>
-    private ToolStripMenuItem BuildAppsMenu()
-    {
-        var item = new ToolStripMenuItem("Apps e jogos");
-        item.DropDownItems.Add(new ToolStripMenuItem("Marque onde o overlay aparece") { Enabled = false });
-        item.DropDownItems.Add(new ToolStripSeparator());
-
-        var names = RunningWindowedProcesses()
-            .Concat(_settings.Apps.Select(a => a.ProcessName))
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(n => n, StringComparer.OrdinalIgnoreCase);
-
-        foreach (var name in names)
-        {
-            item.DropDownItems.Add(Check(name, _settings.IsAppEnabled(name), () =>
-            {
-                _settings.ToggleApp(name);
-                _window.ApplySettings();
-            }));
-        }
-        return item;
-    }
-
-    private static IEnumerable<string> RunningWindowedProcesses()
-    {
-        var own = Environment.ProcessId;
-        foreach (var process in Process.GetProcesses())
-        {
-            using (process)
-            {
-                string? name = null;
-                try
-                {
-                    if (process.Id != own && process.MainWindowHandle != IntPtr.Zero
-                        && !string.IsNullOrEmpty(process.MainWindowTitle))
-                    {
-                        name = process.ProcessName;
-                    }
-                }
-                catch (Exception ex) when (ex is InvalidOperationException or System.ComponentModel.Win32Exception)
-                {
-                    // processo fechou ou é protegido
-                }
-                if (name is not null) yield return name;
-            }
-        }
     }
 
     private static ToolStripMenuItem Check(string text, bool isChecked, Action onClick)

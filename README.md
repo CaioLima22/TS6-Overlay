@@ -2,13 +2,13 @@
 
 Overlay para o TeamSpeak 6 que mostra quem está no seu canal e quem está falando, como o overlay do Discord.
 
-Roda como uma janela externa por cima do jogo, sem injeção no processo do jogo (sem risco de anti-cheat). Por isso funciona com o jogo em **janela sem borda**; tela cheia exclusiva não é suportada.
+Roda como uma janela externa por cima do jogo, sem injeção no processo do jogo e sem consultar nenhum outro processo (menor risco possível com anti-cheat). Por isso funciona com o jogo em **janela sem borda**; tela cheia exclusiva não é suportada.
 
 ## Status
 
 - Fase 1 (MVP): conecta ao TS6, lista o canal atual, acende o nome de quem fala e mostra os ícones de mute.
 - Fase 2 (overlay): janela transparente, sempre no topo, fora da barra de tarefas e do Alt+Tab, que nunca rouba o foco do jogo.
-- Fase 3 (conforto): ícone na bandeja, modo "só quem fala", overlay só nos apps escolhidos e iniciar com o Windows.
+- Fase 3 (conforto): ícone na bandeja, modo "só quem fala" e iniciar com o Windows.
 - Fase 4 (releases): instalador pelo GitHub Releases e atualização automática pelo Velopack.
 
 ## Usando o overlay
@@ -25,7 +25,6 @@ O ícone do TS Overlay na bandeja (ao lado do relógio) tem:
 - **Ocultar/Mostrar overlay** (ou clique duplo no ícone). O ✕ do overlay também só oculta.
 - **Travar/Destravar**, igual ao atalho.
 - **Mostrar só quem está falando**: a lista fica só com quem fala. Travado e sem ninguém falando, o overlay some.
-- **Mostrar só nos apps escolhidos** + **Apps e jogos**: marque em quais programas o overlay aparece. A lista mostra os apps abertos agora e os que você já marcou. Destravado, o overlay sempre aparece para dar para posicioná-lo.
 - **Iniciar com o Windows**: registra o executável atual em `HKCU\...\Run`. Ative pelo `.exe` que você vai usar no dia a dia.
 - **Sair**.
 
