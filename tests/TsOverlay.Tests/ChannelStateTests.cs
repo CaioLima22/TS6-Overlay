@@ -108,6 +108,74 @@ public class ChannelStateTests
     }
 
     [Fact]
+    public void Client_leaving_my_channel_becomes_last_left()
+    {
+        var state = CreateState();
+        Assert.Null(state.GetLastLeft());
+
+        state.ApplyJson("""
+            { "type": "clientMoved", "payload": { "connectionId": 1, "clientId": 11, "oldChannelId": 5, "newChannelId": 6 } }
+            """);
+
+        Assert.Equal("Ana", state.GetLastLeft());
+        Assert.Equal(new[] { "Caio" }, Names(state));
+    }
+
+    [Fact]
+    public void Client_leaving_the_server_from_my_channel_becomes_last_left()
+    {
+        var state = CreateState();
+
+        state.ApplyJson("""
+            { "type": "clientMoved", "payload": { "connectionId": 1, "clientId": 11, "oldChannelId": 5, "newChannelId": 0 } }
+            """);
+
+        Assert.Equal("Ana", state.GetLastLeft());
+    }
+
+    [Fact]
+    public void Moves_outside_my_channel_do_not_touch_last_left()
+    {
+        var state = CreateState();
+
+        state.ApplyJson("""
+            { "type": "clientMoved", "payload": { "connectionId": 1, "clientId": 12, "oldChannelId": 6, "newChannelId": 0 } }
+            """);
+
+        Assert.Null(state.GetLastLeft());
+    }
+
+    [Fact]
+    public void Last_left_clears_when_the_person_comes_back()
+    {
+        var state = CreateState();
+        state.ApplyJson("""
+            { "type": "clientMoved", "payload": { "connectionId": 1, "clientId": 11, "oldChannelId": 5, "newChannelId": 6 } }
+            """);
+
+        state.ApplyJson("""
+            { "type": "clientMoved", "payload": { "connectionId": 1, "clientId": 11, "oldChannelId": 6, "newChannelId": 5 } }
+            """);
+
+        Assert.Null(state.GetLastLeft());
+    }
+
+    [Fact]
+    public void Last_left_clears_when_I_change_channel()
+    {
+        var state = CreateState();
+        state.ApplyJson("""
+            { "type": "clientMoved", "payload": { "connectionId": 1, "clientId": 11, "oldChannelId": 5, "newChannelId": 0 } }
+            """);
+
+        state.ApplyJson("""
+            { "type": "clientMoved", "payload": { "connectionId": 1, "clientId": 10, "oldChannelId": 5, "newChannelId": 6 } }
+            """);
+
+        Assert.Null(state.GetLastLeft());
+    }
+
+    [Fact]
     public void Properties_update_changes_nickname_and_mute()
     {
         var state = CreateState();

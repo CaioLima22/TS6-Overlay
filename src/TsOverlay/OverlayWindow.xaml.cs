@@ -16,6 +16,7 @@ public partial class OverlayWindow : Window
     private const int LockHotkeyId = 1;
 
     private static readonly Brush UnlockedBorder = new SolidColorBrush(Color.FromRgb(0x58, 0x65, 0xF2));
+    private static readonly Brush UnlockedBackground = new SolidColorBrush(Color.FromArgb(0xCC, 0x1E, 0x1F, 0x22));
 
     private readonly ChannelState _state;
     private readonly TsRemoteClient _client;
@@ -119,6 +120,7 @@ public partial class OverlayWindow : Window
         if (locked) EndHotkeyCapture();
         UnlockedHeader.Visibility = locked ? Visibility.Collapsed : Visibility.Visible;
         Card.BorderBrush = locked ? Brushes.Transparent : UnlockedBorder;
+        Card.Background = locked ? Brushes.Transparent : UnlockedBackground;
         Refresh();
     }
 
@@ -268,6 +270,11 @@ public partial class OverlayWindow : Window
         var allClients = _state.GetVisibleClients();
         var clients = OverlayRules.FilterClients(allClients, _settings.OnlyTalking);
         ClientList.ItemsSource = clients;
+
+        // No modo "só quem fala" a lista é só de quem fala, então quem saiu não entra
+        var lastLeft = _settings.OnlyTalking || allClients.Count == 0 ? null : _state.GetLastLeft();
+        LastLeftName.Text = lastLeft ?? "";
+        LastLeftRow.Visibility = lastLeft is null ? Visibility.Collapsed : Visibility.Visible;
 
         StatusText.Text = _client.Status switch
         {

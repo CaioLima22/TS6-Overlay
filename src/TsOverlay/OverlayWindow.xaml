@@ -7,6 +7,9 @@
         ResizeMode="NoResize" ShowInTaskbar="False" Topmost="True" ShowActivated="False"
         Foreground="#DBDEE1" FontFamily="Segoe UI" FontSize="14">
     <Window.Resources>
+        <!-- Sem fundo, o texto precisa de um contorno escuro para ler sobre qualquer jogo -->
+        <DropShadowEffect x:Key="TextOutline" Color="Black" ShadowDepth="0" BlurRadius="4" Opacity="1" />
+
         <!-- Item da lista: bolinha + nome, com ícones de mute -->
         <DataTemplate x:Key="ClientTemplate">
             <Grid Margin="0,3">
@@ -15,7 +18,7 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <Ellipse x:Name="Dot" Width="10" Height="10" Margin="0,0,8,0" Fill="#4E5058" />
+                <Ellipse x:Name="Dot" Width="10" Height="10" Margin="0,0,8,0" Fill="#80848E" />
                 <TextBlock x:Name="Name" Grid.Column="1" Text="{Binding Nickname}" TextTrimming="CharacterEllipsis" />
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
                     <!-- Segoe MDL2 Assets: E720 = microfone, E74F = som mutado -->
@@ -44,7 +47,8 @@
         </DataTemplate>
     </Window.Resources>
 
-    <Border x:Name="Card" CornerRadius="8" Background="#CC1E1F22" BorderThickness="1" BorderBrush="Transparent"
+    <!-- Travado fica só o texto; destravado ganha fundo para dar onde clicar e arrastar -->
+    <Border x:Name="Card" CornerRadius="8" Background="Transparent" BorderThickness="1" BorderBrush="Transparent"
             MouseLeftButtonDown="Card_MouseLeftButtonDown" MouseWheel="Card_MouseWheel">
         <StackPanel Margin="12,8,12,10">
             <!-- Só aparece destravado: dica de uso e botão de fechar -->
@@ -62,8 +66,19 @@
                         HorizontalAlignment="Right" VerticalAlignment="Top" Width="18" Height="18" Padding="0"
                         FontSize="11" Foreground="#949BA4" Background="Transparent" BorderThickness="0" Cursor="Hand" />
             </Grid>
-            <TextBlock x:Name="StatusText" Foreground="#949BA4" FontSize="12" TextWrapping="Wrap" />
-            <ItemsControl x:Name="ClientList" ItemTemplate="{StaticResource ClientTemplate}" />
+            <StackPanel Effect="{StaticResource TextOutline}">
+                <TextBlock x:Name="StatusText" Foreground="#B5BAC1" FontSize="12" TextWrapping="Wrap" />
+                <ItemsControl x:Name="ClientList" ItemTemplate="{StaticResource ClientTemplate}" />
+                <!-- Último que saiu do canal: apagado e riscado -->
+                <Grid x:Name="LastLeftRow" Margin="0,3" Opacity="0.45" ToolTip="Último que saiu do canal">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Ellipse Width="10" Height="10" Margin="0,0,8,0" Stroke="#80848E" StrokeThickness="1.5" />
+                    <TextBlock x:Name="LastLeftName" Grid.Column="1" TextDecorations="Strikethrough" TextTrimming="CharacterEllipsis" />
+                </Grid>
+            </StackPanel>
         </StackPanel>
     </Border>
 </Window>
