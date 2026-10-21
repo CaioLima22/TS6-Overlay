@@ -58,7 +58,7 @@
                                 Background="#33FFFFFF" BorderBrush="#5865F2" Cursor="Hand" Focusable="False" />
                     </StackPanel>
                 </StackPanel>
-                <Button x:Name="CloseButton" Content="✕" Click="CloseButton_Click" ToolTip="Fechar o TS Overlay"
+                <Button x:Name="CloseButton" Content="✕" Click="CloseButton_Click" ToolTip="Ocultar (o TS Overlay continua na bandeja)"
                         HorizontalAlignment="Right" VerticalAlignment="Top" Width="18" Height="18" Padding="0"
                         FontSize="11" Foreground="#949BA4" Background="Transparent" BorderThickness="0" Cursor="Hand" />
             </Grid>

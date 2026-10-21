@@ -1,7 +1,9 @@
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
+using TsOverlay.Core.Overlay;
 using TsOverlay.Core.Settings;
 using TsOverlay.Core.State;
 using TsOverlay.Core.Ts;
@@ -14,6 +16,7 @@ public partial class OverlayWindow : Window
 {
     private const int LockHotkeyId = 1;
 
+    private static readonly string OwnProcess = Process.GetCurrentProcess().ProcessName;
     private static readonly Brush UnlockedBorder = new SolidColorBrush(Color.FromRgb(0x58, 0x65, 0xF2));
 
     private readonly ChannelState _state;
@@ -25,6 +28,8 @@ public partial class OverlayWindow : Window
     private bool _hotkeyRegistered;
     private bool _capturingHotkey;
     private int _refreshQueued;
+    private ForegroundWatcher? _foreground;
+    private bool _hiddenByUser;
 
     public OverlayWindow(ChannelState state, TsRemoteClient client, AppSettings settings)
     {
@@ -55,6 +60,9 @@ public partial class OverlayWindow : Window
 
         _hotkeyRegistered = RegisterHotkey(_hotkey);
 
+        _foreground = new ForegroundWatcher();
+        _foreground.Changed += _ => Refresh();
+
         // Sem atalho não teria como destravar, então começa destravado
         ApplyLocked(_settings.Locked && _hotkeyRegistered);
     }
@@ -63,6 +71,7 @@ public partial class OverlayWindow : Window
     {
         if (_hotkeyRegistered) Win32.UnregisterHotKey(_hwnd, LockHotkeyId);
         _source?.RemoveHook(WndProc);
+        _foreground?.Dispose();
         SaveSettings();
         base.OnClosed(e);
     }
@@ -71,11 +80,38 @@ public partial class OverlayWindow : Window
     {
         if (msg == Win32.WM_HOTKEY && wParam.ToInt32() == LockHotkeyId)
         {
-            ApplyLocked(!_settings.Locked);
-            SaveSettings();
+            ToggleLocked();
             handled = true;
         }
         return IntPtr.Zero;
+    }
+
+    /// <summary>Ocultado pela bandeja ou pelo ✕. O app continua rodando.</summary>
+    public bool HiddenByUser
+    {
+        get => _hiddenByUser;
+        set
+        {
+            _hiddenByUser = value;
+            Refresh();
+        }
+    }
+
+    public string LockHotkey => _hotkey.ToString();
+
+    public void ToggleLocked()
+    {
+        // Sem atalho registrado, travar deixaria o overlay sem como destravar pelo teclado,
+        // mas a bandeja ainda destrava, então aqui é permitido
+        ApplyLocked(!_settings.Locked);
+        SaveSettings();
+    }
+
+    /// <summary>Chamado pela bandeja depois de mudar uma opção.</summary>
+    public void ApplySettings()
+    {
+        SaveSettings();
+        Refresh();
     }
 
     private bool RegisterHotkey(Hotkey hotkey) =>
@@ -142,7 +178,7 @@ public partial class OverlayWindow : Window
         e.Handled = true;
     }
 
-    private void CloseButton_Click(object sender, RoutedEventArgs e) => Close();
+    private void CloseButton_Click(object sender, RoutedEventArgs e) => HiddenByUser = true;
 
     // Para capturar o novo atalho a janela precisa receber o teclado, então o
     // WS_EX_NOACTIVATE sai só enquanto a captura durar
@@ -236,14 +272,16 @@ public partial class OverlayWindow : Window
 
     private void Refresh()
     {
-        var clients = _state.GetVisibleClients();
+        var allClients = _state.GetVisibleClients();
+        var clients = OverlayRules.FilterClients(allClients, _settings.OnlyTalking);
         ClientList.ItemsSource = clients;
 
         StatusText.Text = _client.Status switch
         {
             TsConnectionStatus.Connecting => "Procurando o TeamSpeak... Confira se Remote Apps está ativado nas configurações.",
             TsConnectionStatus.WaitingForApproval => "Aprove o TS Overlay na notificação do TeamSpeak.",
-            _ when clients.Count == 0 => "Não conectado a nenhum servidor.",
+            _ when allClients.Count == 0 => "Não conectado a nenhum servidor.",
+            _ when clients.Count == 0 && !_settings.Locked => "Ninguém falando agora.",
             _ => "",
         };
         if (!_hotkeyRegistered && _hwnd != IntPtr.Zero)
@@ -251,6 +289,12 @@ public partial class OverlayWindow : Window
             StatusText.Text = (StatusText.Text + $"\nO atalho {_hotkey} está em uso por outro programa. Clique nele acima para escolher outro.").Trim();
         }
         StatusText.Visibility = StatusText.Text.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
+
+        // No modo "só quem fala", travado e sem ninguém falando, o cartão some por inteiro
+        var nothingToShow = _settings.Locked && clients.Count == 0 && StatusText.Text.Length == 0;
+        var show = !nothingToShow
+            && OverlayRules.ShouldShow(_hiddenByUser, _settings, _foreground?.CurrentProcess, OwnProcess);
+        Card.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
 
         HelpText.Text = $"Arraste para mover · Ctrl+roda muda a opacidade · {_hotkey} trava";
         if (!_capturingHotkey) HotkeyButton.Content = _hotkey.ToString();

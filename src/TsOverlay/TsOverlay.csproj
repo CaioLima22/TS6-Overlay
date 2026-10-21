@@ -4,6 +4,8 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net8.0-windows</TargetFramework>
     <UseWPF>true</UseWPF>
+    <!-- Só para o NotifyIcon da bandeja -->
+    <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <!-- Permite compilar fora do Windows (CI e Linux); o app só roda no Windows -->
@@ -11,6 +13,12 @@
     <AssemblyName>TsOverlay</AssemblyName>
     <Version>0.1.0</Version>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Evita conflito de nomes entre WPF e WinForms (Application, Button, Brush...) -->
+    <Using Remove="System.Windows.Forms" />
+    <Using Remove="System.Drawing" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\TsOverlay.Core\TsOverlay.Core.csproj" />
