@@ -30,7 +30,7 @@ public partial class App : Application
             _client.RawMessage += text => Debug.WriteLine($"[TS] {text}");
         }
 
-        var window = new OverlayWindow(state, _client);
+        var window = new OverlayWindow(state, _client, settings);
         MainWindow = window;
         window.Show();
 

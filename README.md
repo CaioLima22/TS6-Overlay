@@ -6,7 +6,17 @@ Roda como uma janela externa por cima do jogo, sem injeção no processo do jogo
 
 ## Status
 
-Fase 1 (MVP): conecta ao TS6, lista o canal atual, acende o nome de quem fala e mostra os ícones de mute. Por enquanto é uma janela comum sempre no topo; transparência e click-through chegam na fase 2.
+- Fase 1 (MVP): conecta ao TS6, lista o canal atual, acende o nome de quem fala e mostra os ícones de mute.
+- Fase 2 (overlay): janela transparente, sempre no topo, fora da barra de tarefas e do Alt+Tab, que nunca rouba o foco do jogo.
+
+## Usando o overlay
+
+- **Destravado** (borda azul): arraste para mover, use Ctrl + roda do mouse para mudar a opacidade e o ✕ para fechar.
+- **Travado**: os cliques passam direto para o jogo.
+- **Ctrl+Shift+O** (padrão) alterna entre travado e destravado, mesmo com o jogo em foco.
+- Para trocar o atalho: destrave, clique no botão do atalho e pressione a nova combinação (Esc cancela). Se outro programa já usa o atalho, o overlay abre destravado e avisa.
+
+Posição, opacidade, o estado travado e o atalho ficam salvos para a próxima vez. Se a posição salva estiver fora da tela (um monitor desconectado, por exemplo), o overlay volta para o canto superior esquerdo.
 
 ## Como usar
 
