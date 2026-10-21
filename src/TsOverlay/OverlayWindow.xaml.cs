@@ -116,7 +116,7 @@ public partial class OverlayWindow : Window
         {
             _settings.Save();
         }
-        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        catch (Exception ex) when (ex is System.IO.IOException or UnauthorizedAccessException)
         {
             // Não vale derrubar o overlay por não conseguir salvar a posição
         }
