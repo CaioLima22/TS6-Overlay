@@ -20,6 +20,16 @@
     <Using Remove="System.Drawing" />
   </ItemGroup>
 
+  <!-- Main próprio em Program.cs: o Velopack precisa rodar antes de tudo -->
+  <ItemGroup>
+    <ApplicationDefinition Remove="App.xaml" />
+    <Page Include="App.xaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Velopack" Version="1.2.161" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\TsOverlay.Core\TsOverlay.Core.csproj" />
   </ItemGroup>
