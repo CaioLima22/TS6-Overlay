@@ -15,3 +15,8 @@ jobs:
           dotnet-version: 8.0.x
       - run: dotnet build TsOverlay.sln -c Release
       - run: dotnet test tests/TsOverlay.Tests -c Release --no-build
+
+      # Mesmo empacotamento da release, sem publicar nada, para pegar erro antes da tag
+      - run: dotnet publish src/TsOverlay -c Release -r win-x64 --self-contained -p:Version=0.0.1 -o publish
+      - run: dotnet tool install -g vpk --version 1.2.161
+      - run: vpk pack -u TsOverlay -v 0.0.1 -p publish -e TsOverlay.exe --packTitle "TS Overlay" --packAuthors "Caio"

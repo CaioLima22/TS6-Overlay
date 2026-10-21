@@ -13,13 +13,17 @@ internal sealed class TrayIcon : IDisposable
     private readonly NotifyIcon _icon;
     private readonly OverlayWindow _window;
     private readonly AppSettings _settings;
+    private readonly AutoUpdater _updater;
     private readonly Action _exit;
+    private readonly Action _restartToUpdate;
 
-    public TrayIcon(OverlayWindow window, AppSettings settings, Action exit)
+    public TrayIcon(OverlayWindow window, AppSettings settings, AutoUpdater updater, Action exit, Action restartToUpdate)
     {
         _window = window;
         _settings = settings;
+        _updater = updater;
         _exit = exit;
+        _restartToUpdate = restartToUpdate;
 
         var menu = new ContextMenuStrip();
         menu.Opening += (_, _) => BuildMenu(menu);
@@ -32,6 +36,11 @@ internal sealed class TrayIcon : IDisposable
             ContextMenuStrip = menu,
             Visible = true,
         };
+        _updater.UpdateReady += version =>
+            _icon.ShowBalloonTip(8000, "Atualização do TS Overlay",
+                $"A versão {version} foi baixada e entra quando você sair. Clique aqui para reiniciar agora.",
+                ToolTipIcon.Info);
+        _icon.BalloonTipClicked += (_, _) => _restartToUpdate();
         _icon.MouseDoubleClick += (_, e) =>
         {
             if (e.Button == MouseButtons.Left) _window.HiddenByUser = !_window.HiddenByUser;
@@ -63,7 +72,20 @@ internal sealed class TrayIcon : IDisposable
             StartupRegistration.SetEnabled(!StartupRegistration.IsEnabled)));
         menu.Items.Add(new ToolStripSeparator());
 
+        menu.Items.Add(BuildUpdateItem());
         menu.Items.Add("Sair", null, (_, _) => _exit());
+    }
+
+    private ToolStripMenuItem BuildUpdateItem()
+    {
+        if (_updater.PendingVersion is { } pending)
+        {
+            return new ToolStripMenuItem($"Reiniciar e atualizar para a v{pending}", null, (_, _) => _restartToUpdate());
+        }
+        var text = _updater.IsInstalled
+            ? $"TS Overlay v{_updater.CurrentVersion}"
+            : $"TS Overlay v{_updater.CurrentVersion} (sem atualização automática fora do instalador)";
+        return new ToolStripMenuItem(text) { Enabled = false };
     }
 
     /// <summary>Apps abertos agora e os já salvos; marcado = o overlay aparece nele.</summary>

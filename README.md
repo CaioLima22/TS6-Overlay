@@ -9,6 +9,7 @@ Roda como uma janela externa por cima do jogo, sem injeção no processo do jogo
 - Fase 1 (MVP): conecta ao TS6, lista o canal atual, acende o nome de quem fala e mostra os ícones de mute.
 - Fase 2 (overlay): janela transparente, sempre no topo, fora da barra de tarefas e do Alt+Tab, que nunca rouba o foco do jogo.
 - Fase 3 (conforto): ícone na bandeja, modo "só quem fala", overlay só nos apps escolhidos e iniciar com o Windows.
+- Fase 4 (releases): instalador pelo GitHub Releases e atualização automática pelo Velopack.
 
 ## Usando o overlay
 
@@ -29,6 +30,10 @@ O ícone do TS Overlay na bandeja (ao lado do relógio) tem:
 - **Sair**.
 
 Posição, opacidade, o estado travado e o atalho ficam salvos para a próxima vez. Se a posição salva estiver fora da tela (um monitor desconectado, por exemplo), o overlay volta para o canto superior esquerdo.
+
+## Instalação
+
+Baixe o `TsOverlay-win-Setup.exe` da [última release](https://github.com/CaioLima22/TS6-Overlay/releases/latest) e rode. Ele instala em `%LocalAppData%\TsOverlay`, cria atalhos e, a partir daí, o app se atualiza sozinho: checa ao abrir e a cada 6 horas, baixa em segundo plano e aplica quando você sai (ou na hora, pela bandeja).
 
 ## Como usar
 
@@ -51,6 +56,15 @@ tests/TsOverlay.Tests → testes do ChannelState e do cliente
 ```
 
 ## Desenvolvimento
+
+### Publicar uma versão
+
+```
+git tag v0.2.0
+git push origin v0.2.0
+```
+
+O workflow `Release` roda os testes, publica, empacota com o Velopack e cria a release no GitHub. Os apps instalados pegam a versão nova sozinhos.
 
 ```
 dotnet build TsOverlay.sln
