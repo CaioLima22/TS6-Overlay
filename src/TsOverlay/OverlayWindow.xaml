@@ -1,0 +1,51 @@
+<Window x:Class="TsOverlay.OverlayWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="TS Overlay"
+        Width="260" SizeToContent="Height" MinHeight="60"
+        Topmost="True" ShowActivated="False"
+        Background="#E61E1F22" Foreground="#DBDEE1"
+        FontFamily="Segoe UI" FontSize="14">
+    <Window.Resources>
+        <!-- Item da lista: bolinha + nome, com ícones de mute -->
+        <DataTemplate x:Key="ClientTemplate">
+            <Grid Margin="0,3">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <Ellipse x:Name="Dot" Width="10" Height="10" Margin="0,0,8,0" Fill="#4E5058" />
+                <TextBlock x:Name="Name" Grid.Column="1" Text="{Binding Nickname}" TextTrimming="CharacterEllipsis" />
+                <StackPanel Grid.Column="2" Orientation="Horizontal">
+                    <!-- Segoe MDL2 Assets: E720 = microfone, E74F = som mutado -->
+                    <TextBlock x:Name="MicMuted" Text="&#xE720;" FontFamily="Segoe MDL2 Assets" Foreground="#F23F43"
+                               Margin="6,0,0,0" VerticalAlignment="Center" Visibility="Collapsed" ToolTip="Microfone mutado" />
+                    <TextBlock x:Name="SoundMuted" Text="&#xE74F;" FontFamily="Segoe MDL2 Assets" Foreground="#F23F43"
+                               Margin="6,0,0,0" VerticalAlignment="Center" Visibility="Collapsed" ToolTip="Som mutado" />
+                </StackPanel>
+            </Grid>
+            <DataTemplate.Triggers>
+                <DataTrigger Binding="{Binding IsTalking}" Value="True">
+                    <Setter TargetName="Dot" Property="Fill" Value="#23A55A" />
+                    <Setter TargetName="Name" Property="Foreground" Value="#FFFFFF" />
+                    <Setter TargetName="Name" Property="FontWeight" Value="SemiBold" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsMe}" Value="True">
+                    <Setter TargetName="Name" Property="FontStyle" Value="Italic" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding InputMuted}" Value="True">
+                    <Setter TargetName="MicMuted" Property="Visibility" Value="Visible" />
+                </DataTrigger>
+                <DataTrigger Binding="{Binding OutputMuted}" Value="True">
+                    <Setter TargetName="SoundMuted" Property="Visibility" Value="Visible" />
+                </DataTrigger>
+            </DataTemplate.Triggers>
+        </DataTemplate>
+    </Window.Resources>
+
+    <StackPanel Margin="12,10">
+        <TextBlock x:Name="StatusText" Foreground="#949BA4" FontSize="12" TextWrapping="Wrap" />
+        <ItemsControl x:Name="ClientList" ItemTemplate="{StaticResource ClientTemplate}" />
+    </StackPanel>
+</Window>

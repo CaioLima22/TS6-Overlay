@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <!-- Permite compilar fora do Windows (CI e Linux); o app só roda no Windows -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <AssemblyName>TsOverlay</AssemblyName>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\TsOverlay.Core\TsOverlay.Core.csproj" />
+  </ItemGroup>
+
+</Project>
