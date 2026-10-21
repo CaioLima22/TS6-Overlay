@@ -8,11 +8,23 @@ namespace TsOverlay;
 
 public partial class App : Application
 {
+    private const string SingleInstanceName = "TsOverlay.SingleInstance";
+
     private TsRemoteClient? _client;
+    private TrayIcon? _tray;
+    private Mutex? _singleInstance;
 
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);
+
+        // Iniciar com o Windows + abrir na mão não pode dar dois overlays
+        _singleInstance = new Mutex(true, SingleInstanceName, out var isFirst);
+        if (!isFirst)
+        {
+            Shutdown();
+            return;
+        }
 
         var settings = AppSettings.Load();
         var state = new ChannelState();
@@ -33,13 +45,20 @@ public partial class App : Application
         var window = new OverlayWindow(state, _client, settings);
         MainWindow = window;
         window.Show();
+        _tray = new TrayIcon(window, settings, () =>
+        {
+            window.Close();
+            Shutdown();
+        });
 
         _client.Start();
     }
 
     protected override void OnExit(ExitEventArgs e)
     {
+        _tray?.Dispose();
         _client?.Dispose();
+        _singleInstance?.Dispose();
         base.OnExit(e);
     }
 }
