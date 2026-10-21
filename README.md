@@ -13,9 +13,10 @@ Roda como uma janela externa por cima do jogo, sem injeção no processo do jogo
 
 - **Destravado** (borda azul): arraste para mover, use Ctrl + roda do mouse para mudar a opacidade e o ✕ para fechar.
 - **Travado**: os cliques passam direto para o jogo.
-- **Ctrl+Shift+O** alterna entre travado e destravado, mesmo com o jogo em foco.
+- **Ctrl+Shift+O** (padrão) alterna entre travado e destravado, mesmo com o jogo em foco.
+- Para trocar o atalho: destrave, clique no botão do atalho e pressione a nova combinação (Esc cancela). Se outro programa já usa o atalho, o overlay abre destravado e avisa.
 
-Posição, opacidade e o estado travado ficam salvos para a próxima vez. Se a posição salva estiver fora da tela (um monitor desconectado, por exemplo), o overlay volta para o canto superior esquerdo.
+Posição, opacidade, o estado travado e o atalho ficam salvos para a próxima vez. Se a posição salva estiver fora da tela (um monitor desconectado, por exemplo), o overlay volta para o canto superior esquerdo.
 
 ## Como usar
 

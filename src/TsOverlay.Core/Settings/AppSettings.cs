@@ -31,6 +31,12 @@ public sealed class AppSettings
     /// <summary>Travado = cliques passam para o jogo. Destravado = dá para arrastar.</summary>
     public bool Locked { get; set; }
 
+    /// <summary>Atalho global que trava e destrava, no formato "Ctrl+Shift+O".</summary>
+    public string LockHotkey { get; set; } = Hotkey.Default.ToString();
+
+    /// <summary>O atalho salvo, ou o padrão se o texto for inválido.</summary>
+    public Hotkey GetLockHotkey() => Hotkey.TryParse(LockHotkey, out var hotkey) ? hotkey : Hotkey.Default;
+
     public const double MinOpacity = 0.2;
 
     public static double ClampOpacity(double value) =>

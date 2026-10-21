@@ -49,8 +49,15 @@
         <StackPanel Margin="12,8,12,10">
             <!-- Só aparece destravado: dica de uso e botão de fechar -->
             <Grid x:Name="UnlockedHeader" Margin="0,0,0,6">
-                <TextBlock Foreground="#949BA4" FontSize="11" TextWrapping="Wrap" Margin="0,0,20,0"
-                           Text="Arraste para mover · Ctrl+roda muda a opacidade · Ctrl+Shift+O trava" />
+                <StackPanel Margin="0,0,20,0">
+                    <TextBlock x:Name="HelpText" Foreground="#949BA4" FontSize="11" TextWrapping="Wrap" />
+                    <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+                        <TextBlock Text="Atalho:" Foreground="#949BA4" FontSize="11" VerticalAlignment="Center" />
+                        <Button x:Name="HotkeyButton" Click="HotkeyButton_Click" ToolTip="Clique para escolher outro atalho"
+                                Margin="6,0,0,0" Padding="6,1" FontSize="11" Foreground="#DBDEE1"
+                                Background="#33FFFFFF" BorderBrush="#5865F2" Cursor="Hand" Focusable="False" />
+                    </StackPanel>
+                </StackPanel>
                 <Button x:Name="CloseButton" Content="✕" Click="CloseButton_Click" ToolTip="Fechar o TS Overlay"
                         HorizontalAlignment="Right" VerticalAlignment="Top" Width="18" Height="18" Padding="0"
                         FontSize="11" Foreground="#949BA4" Background="Transparent" BorderThickness="0" Cursor="Hand" />
