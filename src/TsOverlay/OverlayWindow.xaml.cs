@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
@@ -16,7 +15,6 @@ public partial class OverlayWindow : Window
 {
     private const int LockHotkeyId = 1;
 
-    private static readonly string OwnProcess = Process.GetCurrentProcess().ProcessName;
     private static readonly Brush UnlockedBorder = new SolidColorBrush(Color.FromRgb(0x58, 0x65, 0xF2));
 
     private readonly ChannelState _state;
@@ -28,7 +26,6 @@ public partial class OverlayWindow : Window
     private bool _hotkeyRegistered;
     private bool _capturingHotkey;
     private int _refreshQueued;
-    private ForegroundWatcher? _foreground;
     private bool _hiddenByUser;
 
     public OverlayWindow(ChannelState state, TsRemoteClient client, AppSettings settings)
@@ -60,9 +57,6 @@ public partial class OverlayWindow : Window
 
         _hotkeyRegistered = RegisterHotkey(_hotkey);
 
-        _foreground = new ForegroundWatcher();
-        _foreground.Changed += _ => Refresh();
-
         // Sem atalho não teria como destravar, então começa destravado
         ApplyLocked(_settings.Locked && _hotkeyRegistered);
     }
@@ -71,7 +65,6 @@ public partial class OverlayWindow : Window
     {
         if (_hotkeyRegistered) Win32.UnregisterHotKey(_hwnd, LockHotkeyId);
         _source?.RemoveHook(WndProc);
-        _foreground?.Dispose();
         SaveSettings();
         base.OnClosed(e);
     }
@@ -292,8 +285,7 @@ public partial class OverlayWindow : Window
 
         // No modo "só quem fala", travado e sem ninguém falando, o cartão some por inteiro
         var nothingToShow = _settings.Locked && clients.Count == 0 && StatusText.Text.Length == 0;
-        var show = !nothingToShow
-            && OverlayRules.ShouldShow(_hiddenByUser, _settings, _foreground?.CurrentProcess, OwnProcess);
+        var show = !nothingToShow && !_hiddenByUser;
         Card.Visibility = show ? Visibility.Visible : Visibility.Collapsed;
 
         HelpText.Text = $"Arraste para mover · Ctrl+roda muda a opacidade · {_hotkey} trava";

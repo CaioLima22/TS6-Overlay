@@ -37,30 +37,6 @@ public sealed class AppSettings
     /// <summary>Mostra só quem está falando em vez do canal inteiro.</summary>
     public bool OnlyTalking { get; set; }
 
-    /// <summary>Travado, o overlay só aparece quando um dos apps ativados está em primeiro plano.</summary>
-    public bool ShowOnlyInApps { get; set; }
-
-    /// <summary>Jogos e apps escolhidos, pelo nome do processo (ex.: "eldenring").</summary>
-    public List<OverlayApp> Apps { get; set; } = new();
-
-    /// <summary>Ativa o app se ele estiver desativado ou fora da lista; desativa se estiver ativo.</summary>
-    public void ToggleApp(string processName)
-    {
-        var app = Apps.Find(a => string.Equals(a.ProcessName, processName, StringComparison.OrdinalIgnoreCase));
-        if (app is null)
-        {
-            Apps.Add(new OverlayApp { ProcessName = processName, Enabled = true });
-        }
-        else
-        {
-            app.Enabled = !app.Enabled;
-        }
-    }
-
-    public bool IsAppEnabled(string? processName) =>
-        processName is not null
-        && Apps.Exists(a => a.Enabled && string.Equals(a.ProcessName, processName, StringComparison.OrdinalIgnoreCase));
-
     /// <summary>O atalho salvo, ou o padrão se o texto for inválido.</summary>
     public Hotkey GetLockHotkey() => Hotkey.TryParse(LockHotkey, out var hotkey) ? hotkey : Hotkey.Default;
 
@@ -92,8 +68,6 @@ public sealed class AppSettings
             {
                 var settings = JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(path), JsonOptions) ?? new AppSettings();
                 settings.Opacity = ClampOpacity(settings.Opacity);
-                settings.Apps ??= new();
-                settings.Apps.RemoveAll(a => string.IsNullOrWhiteSpace(a.ProcessName));
                 return settings;
             }
         }
@@ -116,11 +90,4 @@ public sealed class AppSettings
             File.Move(tmp, path, overwrite: true);
         }
     }
-}
-
-public sealed class OverlayApp
-{
-    public string ProcessName { get; set; } = "";
-
-    public bool Enabled { get; set; } = true;
 }
