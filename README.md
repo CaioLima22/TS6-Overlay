@@ -32,7 +32,7 @@ Posição, opacidade, o estado travado e o atalho ficam salvos para a próxima v
 
 ## Instalação
 
-Baixe o `TsOverlay-win-Setup.exe` da [última release](https://github.com/CaioLima22/TS6-Overlay/releases/latest) e rode. Ele instala em `%LocalAppData%\TsOverlay`, cria atalhos e, a partir daí, o app se atualiza sozinho: checa ao abrir e a cada 6 horas, baixa em segundo plano e aplica quando você sai (ou na hora, pela bandeja).
+Baixe o `TsOverlay-win-Setup.exe` da [última release](https://github.com/CaioLima22/TS6-Overlay/releases/latest) e rode. Ele instala em `%LocalAppData%\TsOverlay`, cria atalhos e, a partir daí, o app se atualiza sozinho: checa ao abrir e a cada 6 horas, baixa em segundo plano e aplica quando você sai (ou na hora, pela bandeja). Para checar na hora, use **Verificar atualizações** no menu da bandeja.
 
 ## Como usar
 

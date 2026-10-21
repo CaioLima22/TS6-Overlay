@@ -8,6 +8,7 @@ namespace TsOverlay;
 /// <summary>
 /// Atualização automática pelas releases do GitHub (RF14). Checa ao abrir e a cada 6 h,
 /// baixa em segundo plano e aplica ao sair, ou na hora se o usuário pedir pela bandeja.
+/// Também dá para checar na mão pelo menu da bandeja.
 /// Rodando fora da instalação (dotnet run) não faz nada.
 /// </summary>
 internal sealed class AutoUpdater : IDisposable
@@ -21,6 +22,8 @@ internal sealed class AutoUpdater : IDisposable
     private readonly DispatcherTimer _timer = new();
     private VelopackAsset? _pending;
     private bool _checking;
+
+    public enum CheckResult { NotInstalled, AlreadyChecking, UpToDate, Downloaded, AlreadyPending, Failed }
 
     public AutoUpdater()
     {
@@ -40,6 +43,9 @@ internal sealed class AutoUpdater : IDisposable
     /// <summary>Versão já baixada esperando para ser aplicada.</summary>
     public string? PendingVersion => _pending?.Version?.ToString();
 
+    /// <summary>Tem uma checagem ou download rolando agora.</summary>
+    public bool IsChecking => _checking;
+
     /// <summary>Disparado no thread de UI quando uma atualização termina de baixar.</summary>
     public event Action<string>? UpdateReady;
 
@@ -50,21 +56,27 @@ internal sealed class AutoUpdater : IDisposable
         _timer.Start();
     }
 
-    public async Task CheckAsync()
+    /// <param name="onDownloading">Chamado com a versão nova quando acha uma e começa a baixar.</param>
+    public async Task<CheckResult> CheckAsync(Action<string>? onDownloading = null)
     {
-        if (!IsInstalled || _checking || _pending is not null) return;
+        if (!IsInstalled) return CheckResult.NotInstalled;
+        if (_pending is not null) return CheckResult.AlreadyPending;
+        if (_checking) return CheckResult.AlreadyChecking;
         _checking = true;
         try
         {
             var info = await _manager.CheckForUpdatesAsync();
-            if (info is null) return;
+            if (info is null) return CheckResult.UpToDate;
+            onDownloading?.Invoke(info.TargetFullRelease.Version?.ToString() ?? "");
             await _manager.DownloadUpdatesAsync(info, null, CancellationToken.None);
             _pending = info.TargetFullRelease;
             UpdateReady?.Invoke(PendingVersion ?? "");
+            return CheckResult.Downloaded;
         }
         catch (Exception)
         {
             // Sem internet ou GitHub fora do ar: tenta de novo na próxima checagem
+            return CheckResult.Failed;
         }
         finally
         {
