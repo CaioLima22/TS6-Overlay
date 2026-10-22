@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
+using System.Windows.Threading;
 using TsOverlay.Core.Overlay;
 using TsOverlay.Core.Settings;
 using TsOverlay.Core.State;
@@ -27,6 +28,7 @@ public partial class OverlayWindow : Window
     private bool _hotkeyRegistered;
     private bool _capturingHotkey;
     private int _refreshQueued;
+    private readonly DispatcherTimer _lastLeftTimer = new();
     private bool _hiddenByUser;
 
     public OverlayWindow(ChannelState state, TsRemoteClient client, AppSettings settings)
@@ -41,6 +43,12 @@ public partial class OverlayWindow : Window
         RestorePosition();
 
         _state.Changed += QueueRefresh;
+        // O último que saiu some sozinho, sem esperar outro evento do TS
+        _lastLeftTimer.Tick += (_, _) =>
+        {
+            _lastLeftTimer.Stop();
+            Refresh();
+        };
         _client.StatusChanged += _ => QueueRefresh();
         AvatarCache.Instance.Changed += QueueRefresh;
         Refresh();
@@ -274,8 +282,15 @@ public partial class OverlayWindow : Window
 
         // No modo "só quem fala" a lista é só de quem fala, então quem saiu não entra
         var lastLeft = _settings.OnlyTalking || allClients.Count == 0 ? null : _state.GetLastLeft();
-        LastLeftName.Text = lastLeft ?? "";
+        LastLeftName.Text = lastLeft?.Nickname ?? "";
         LastLeftRow.Visibility = lastLeft is null ? Visibility.Collapsed : Visibility.Visible;
+        _lastLeftTimer.Stop();
+        if (lastLeft is not null)
+        {
+            var remaining = lastLeft.ExpiresAt - DateTimeOffset.UtcNow;
+            _lastLeftTimer.Interval = remaining > TimeSpan.FromSeconds(1) ? remaining : TimeSpan.FromSeconds(1);
+            _lastLeftTimer.Start();
+        }
 
         StatusText.Text = _client.Status switch
         {

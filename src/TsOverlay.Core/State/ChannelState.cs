@@ -28,14 +28,24 @@ public sealed class ChannelState
         public Dictionary<string, Client> Clients { get; } = new();
         public string? LastLeftClientId { get; set; }
         public string? LastLeftNickname { get; set; }
+        public DateTimeOffset LastLeftAt { get; set; }
 
         public string? MyChannelId =>
             MyClientId is not null && Clients.TryGetValue(MyClientId, out var me) ? me.ChannelId : null;
     }
 
+    /// <summary>Quanto tempo o último que saiu continua aparecendo.</summary>
+    public static readonly TimeSpan LastLeftDuration = TimeSpan.FromMinutes(5);
+
     private readonly object _lock = new();
+    private readonly TimeProvider _time;
     private readonly Dictionary<string, Connection> _connections = new();
     private string? _activeConnectionId;
+
+    public ChannelState(TimeProvider? time = null)
+    {
+        _time = time ?? TimeProvider.System;
+    }
 
     /// <summary>Disparado depois de qualquer mudança visível. Pode vir de qualquer thread.</summary>
     public event Action? Changed;
@@ -65,8 +75,11 @@ public sealed class ChannelState
         }
     }
 
-    /// <summary>Apelido do último que saiu do meu canal, ou null. Zera quando eu troco de canal.</summary>
-    public string? GetLastLeft()
+    /// <summary>
+    /// Último que saiu do meu canal, ou null. Some depois de <see cref="LastLeftDuration"/>,
+    /// quando a pessoa volta ou quando eu troco de canal.
+    /// </summary>
+    public LastLeftInfo? GetLastLeft()
     {
         lock (_lock)
         {
@@ -75,7 +88,9 @@ public sealed class ChannelState
             {
                 return null;
             }
-            return conn.LastLeftNickname;
+            if (conn.LastLeftNickname is null) return null;
+            var expiresAt = conn.LastLeftAt + LastLeftDuration;
+            return _time.GetUtcNow() < expiresAt ? new LastLeftInfo(conn.LastLeftNickname, expiresAt) : null;
         }
     }
 
@@ -175,6 +190,7 @@ public sealed class ChannelState
             {
                 conn.LastLeftClientId = clientId;
                 conn.LastLeftNickname = client.Nickname;
+                conn.LastLeftAt = _time.GetUtcNow();
             }
             else if (newChannelId == myChannelId && conn.LastLeftClientId == clientId)
             {

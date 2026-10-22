@@ -117,7 +117,7 @@ public class ChannelStateTests
             { "type": "clientMoved", "payload": { "connectionId": 1, "clientId": 11, "oldChannelId": 5, "newChannelId": 6 } }
             """);
 
-        Assert.Equal("Ana", state.GetLastLeft());
+        Assert.Equal("Ana", state.GetLastLeft()?.Nickname);
         Assert.Equal(new[] { "Caio" }, Names(state));
     }
 
@@ -130,7 +130,7 @@ public class ChannelStateTests
             { "type": "clientMoved", "payload": { "connectionId": 1, "clientId": 11, "oldChannelId": 5, "newChannelId": 0 } }
             """);
 
-        Assert.Equal("Ana", state.GetLastLeft());
+        Assert.Equal("Ana", state.GetLastLeft()?.Nickname);
     }
 
     [Fact]
@@ -172,6 +172,29 @@ public class ChannelStateTests
             { "type": "clientMoved", "payload": { "connectionId": 1, "clientId": 10, "oldChannelId": 5, "newChannelId": 6 } }
             """);
 
+        Assert.Null(state.GetLastLeft());
+    }
+
+    private sealed class ManualTime : TimeProvider
+    {
+        public DateTimeOffset Now { get; set; } = new(2026, 10, 22, 0, 0, 0, TimeSpan.Zero);
+        public override DateTimeOffset GetUtcNow() => Now;
+    }
+
+    [Fact]
+    public void Last_left_disappears_after_five_minutes()
+    {
+        var time = new ManualTime();
+        var state = new ChannelState(time);
+        state.ApplyJson(Auth);
+        state.ApplyJson("""
+            { "type": "clientMoved", "payload": { "connectionId": 1, "clientId": 11, "oldChannelId": 5, "newChannelId": 0 } }
+            """);
+
+        time.Now += TimeSpan.FromMinutes(4);
+        Assert.Equal(time.Now + TimeSpan.FromMinutes(1), state.GetLastLeft()?.ExpiresAt);
+
+        time.Now += TimeSpan.FromMinutes(1);
         Assert.Null(state.GetLastLeft());
     }
 
