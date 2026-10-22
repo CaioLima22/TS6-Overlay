@@ -64,6 +64,21 @@ public static class TsMessages
             : Enumerable.Empty<JsonElement>();
     }
 
+    /// <summary>
+    /// Foto do myTeamSpeak, que a API manda como "2,https://storage.googleapis.com/ts-sys-myts-avatars/...".
+    /// Devolve só o endereço, e só se for https, para nunca baixar de outro tipo de lugar.
+    /// </summary>
+    public static string? ParseMyTeamSpeakAvatar(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw)) return null;
+        var value = raw.Trim();
+        var comma = value.IndexOf(',');
+        if (comma >= 0 && value[..comma].All(char.IsDigit)) value = value[(comma + 1)..];
+        return Uri.TryCreate(value, UriKind.Absolute, out var uri) && uri.Scheme == Uri.UriSchemeHttps
+            ? uri.AbsoluteUri
+            : null;
+    }
+
     /// <summary>Monta a mensagem de autenticação enviada ao abrir o WebSocket.</summary>
     public static string BuildAuth(string identifier, string version, string name, string description, string? apiKey)
     {

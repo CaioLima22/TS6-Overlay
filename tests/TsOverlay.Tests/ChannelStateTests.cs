@@ -268,4 +268,22 @@ public class ChannelStateTests
 
         Assert.Equal(1, changes);
     }
+
+    [Fact]
+    public void MyTeamSpeak_avatar_is_read_and_cleared()
+    {
+        var state = CreateState();
+        Assert.Null(state.GetVisibleClients().Single(c => c.Nickname == "Ana").AvatarUrl);
+
+        state.ApplyJson("""{ "type": "clientPropertiesUpdated", "payload": { "connectionId": 1, "clientId": 11, "properties": { "myteamspeakAvatar": "2,https://storage.googleapis.com/ts-sys-myts-avatars/abc-123/1700000000" } } }""");
+        Assert.Equal("https://storage.googleapis.com/ts-sys-myts-avatars/abc-123/1700000000",
+            state.GetVisibleClients().Single(c => c.Nickname == "Ana").AvatarUrl);
+
+        // Atualização sem o campo não apaga a foto
+        state.ApplyJson("""{ "type": "clientPropertiesUpdated", "payload": { "connectionId": 1, "clientId": 11, "properties": { "inputMuted": false } } }""");
+        Assert.NotNull(state.GetVisibleClients().Single(c => c.Nickname == "Ana").AvatarUrl);
+
+        state.ApplyJson("""{ "type": "clientPropertiesUpdated", "payload": { "connectionId": 1, "clientId": 11, "properties": { "myteamspeakAvatar": "" } } }""");
+        Assert.Null(state.GetVisibleClients().Single(c => c.Nickname == "Ana").AvatarUrl);
+    }
 }
