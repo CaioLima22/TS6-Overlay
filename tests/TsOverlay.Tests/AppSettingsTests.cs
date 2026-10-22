@@ -24,6 +24,26 @@ public class AppSettingsTests : IDisposable
     }
 
     [Fact]
+    public void Hide_hotkey_and_auto_hide_have_defaults_and_survive_a_restart()
+    {
+        var defaults = AppSettings.Load(SettingsPath);
+        Assert.Equal(Hotkey.DefaultHide, defaults.GetHideHotkey());
+        Assert.NotEqual(defaults.GetLockHotkey(), defaults.GetHideHotkey());
+        Assert.True(defaults.AutoHideWhenNoServer);
+
+        new AppSettings { HideHotkey = "Ctrl+Alt+F8", AutoHideWhenNoServer = false }.Save(SettingsPath);
+        var loaded = AppSettings.Load(SettingsPath);
+        Assert.Equal(new Hotkey(HotkeyModifiers.Ctrl | HotkeyModifiers.Alt, 0x77), loaded.GetHideHotkey());
+        Assert.False(loaded.AutoHideWhenNoServer);
+    }
+
+    [Fact]
+    public void Invalid_hide_hotkey_falls_back_to_its_default()
+    {
+        Assert.Equal(Hotkey.DefaultHide, new AppSettings { HideHotkey = "Banana" }.GetHideHotkey());
+    }
+
+    [Fact]
     public void Position_opacity_and_lock_survive_a_restart()
     {
         new AppSettings { ApiKey = "k", WindowLeft = 100, WindowTop = -50, Opacity = 0.6, Locked = true }.Save(SettingsPath);

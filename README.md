@@ -16,19 +16,22 @@ Roda como uma janela externa por cima do jogo, sem injeção no processo do jogo
 - **Destravado** (borda azul): arraste para mover, use Ctrl + roda do mouse para mudar a opacidade e o ✕ para fechar.
 - **Travado**: os cliques passam direto para o jogo.
 - **Ctrl+Shift+O** (padrão) alterna entre travado e destravado, mesmo com o jogo em foco.
-- Para trocar o atalho: destrave, clique no botão do atalho e pressione a nova combinação (Esc cancela). Se outro programa já usa o atalho, o overlay abre destravado e avisa.
+- **Ctrl+Shift+H** (padrão) oculta e mostra o overlay, mesmo com o jogo em foco.
+- Para trocar um atalho: destrave, clique no botão do atalho (Travar ou Ocultar) e pressione a nova combinação (Esc cancela). Se outro programa já usa o atalho, o overlay avisa; o de travar também faz o overlay abrir destravado.
+- **Fora de servidor**: travado, o overlay some sozinho quando você não está em nenhum servidor (ou o TS está fechado) e volta quando você entra num. Se você ocultou na mão, ele continua oculto até você mostrar de novo. Destravado ele fica visível para dar para mover.
 
 ### Bandeja
 
 O ícone do TS Overlay na bandeja (ao lado do relógio) tem:
 
-- **Ocultar/Mostrar overlay** (ou clique duplo no ícone). O ✕ do overlay também só oculta.
+- **Ocultar/Mostrar overlay**, igual ao atalho (ou clique duplo no ícone). O ✕ do overlay também só oculta.
 - **Travar/Destravar**, igual ao atalho.
 - **Mostrar só quem está falando**: a lista fica só com quem fala. Travado e sem ninguém falando, o overlay some.
+- **Ocultar fora de servidor** (ligado por padrão): desligue para o overlay ficar sempre visível, com o aviso "Não conectado a nenhum servidor".
 - **Iniciar com o Windows**: registra o executável atual em `HKCU\...\Run`. Ative pelo `.exe` que você vai usar no dia a dia.
 - **Sair**.
 
-Posição, opacidade, o estado travado e o atalho ficam salvos para a próxima vez. Se a posição salva estiver fora da tela (um monitor desconectado, por exemplo), o overlay volta para o canto superior esquerdo.
+Posição, opacidade, o estado travado, os atalhos e as opções da bandeja ficam salvos para a próxima vez. Se a posição salva estiver fora da tela (um monitor desconectado, por exemplo), o overlay volta para o canto superior esquerdo.
 
 ## Instalação
 

@@ -54,7 +54,7 @@ internal sealed class TrayIcon : IDisposable
     {
         menu.Items.Clear();
 
-        menu.Items.Add(_window.HiddenByUser ? "Mostrar overlay" : "Ocultar overlay", null,
+        menu.Items.Add($"{(_window.HiddenByUser ? "Mostrar" : "Ocultar")} overlay ({_window.HideHotkey})", null,
             (_, _) => _window.HiddenByUser = !_window.HiddenByUser);
         menu.Items.Add($"{(_settings.Locked ? "Destravar" : "Travar")} ({_window.LockHotkey})", null,
             (_, _) => _window.ToggleLocked());
@@ -63,6 +63,11 @@ internal sealed class TrayIcon : IDisposable
         menu.Items.Add(Check("Mostrar só quem está falando", _settings.OnlyTalking, () =>
         {
             _settings.OnlyTalking = !_settings.OnlyTalking;
+            _window.ApplySettings();
+        }));
+        menu.Items.Add(Check("Ocultar fora de servidor", _settings.AutoHideWhenNoServer, () =>
+        {
+            _settings.AutoHideWhenNoServer = !_settings.AutoHideWhenNoServer;
             _window.ApplySettings();
         }));
         menu.Items.Add(Check("Iniciar com o Windows", StartupRegistration.IsEnabled, () =>

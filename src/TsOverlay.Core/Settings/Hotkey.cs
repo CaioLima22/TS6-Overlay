@@ -18,6 +18,9 @@ public sealed record Hotkey(HotkeyModifiers Modifiers, uint VirtualKey)
 {
     public static Hotkey Default { get; } = new(HotkeyModifiers.Ctrl | HotkeyModifiers.Shift, 'O');
 
+    /// <summary>Padrão do atalho de ocultar e mostrar.</summary>
+    public static Hotkey DefaultHide { get; } = new(HotkeyModifiers.Ctrl | HotkeyModifiers.Shift, 'H');
+
     private static readonly Dictionary<string, uint> NamedKeys = BuildNamedKeys();
     private static readonly Dictionary<uint, string> KeyNames =
         NamedKeys.GroupBy(kv => kv.Value).ToDictionary(g => g.Key, g => g.First().Key);
