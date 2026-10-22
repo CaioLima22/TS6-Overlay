@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace TsOverlay.Core.Ts;
 
@@ -77,6 +78,17 @@ public static class TsMessages
         return Uri.TryCreate(value, UriKind.Absolute, out var uri) && uri.Scheme == Uri.UriSchemeHttps
             ? uri.AbsoluteUri
             : null;
+    }
+
+    /// <summary>
+    /// Nome do canal como o TS mostra: espaçadores vêm como "[cspacer]Lobby" ou "[*spacer1]---"
+    /// e o TS esconde a marcação.
+    /// </summary>
+    public static string CleanChannelName(string name)
+    {
+        var match = Regex.Match(name, @"^\[[lrc*]?spacer[^\]]*\](.*)$",
+            RegexOptions.IgnoreCase | RegexOptions.Singleline);
+        return (match.Success ? match.Groups[1].Value : name).Trim();
     }
 
     /// <summary>Monta a mensagem de autenticação enviada ao abrir o WebSocket.</summary>

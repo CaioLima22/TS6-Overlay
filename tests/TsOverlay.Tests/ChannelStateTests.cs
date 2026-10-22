@@ -337,4 +337,54 @@ public class ChannelStateTests
         state.ApplyJson("""{ "type": "clientPropertiesUpdated", "payload": { "connectionId": 1, "clientId": 11, "properties": { "myteamspeakAvatar": "" } } }""");
         Assert.Null(state.GetVisibleClients().Single(c => c.Nickname == "Ana").AvatarUrl);
     }
+
+    [Fact]
+    public void Channel_name_comes_from_auth_and_follows_me()
+    {
+        var state = new ChannelState();
+        state.ApplyJson("""
+            {
+              "type": "auth",
+              "payload": {
+                "connections": [{
+                  "id": 1,
+                  "clientId": 10,
+                  "channelInfos": {
+                    "rootChannels": [{ "id": 5, "properties": { "name": "Lobby" } }],
+                    "subChannels": { "5": [{ "id": "6", "parentId": "5", "properties": { "name": "Ranked" } }] }
+                  },
+                  "clientInfos": [{ "id": 10, "channelId": 5, "properties": { "nickname": "Caio" } }]
+                }]
+              }
+            }
+            """);
+        Assert.Equal("Lobby", state.GetMyChannelName());
+
+        state.ApplyJson("""{ "type": "clientMoved", "payload": { "connectionId": 1, "clientId": 10, "newChannelId": 6 } }""");
+        Assert.Equal("Ranked", state.GetMyChannelName());
+    }
+
+    [Fact]
+    public void Channel_name_from_channels_and_channel_created_events()
+    {
+        var state = CreateState(); // eu no canal 5, sem nomes ainda
+        Assert.Null(state.GetMyChannelName());
+
+        state.ApplyJson("""{ "type": "channels", "payload": { "connectionId": 1, "info": { "rootChannels": [{ "id": 5, "properties": { "name": "[cspacer]Geral" } }], "subChannels": {} } } }""");
+        Assert.Equal("Geral", state.GetMyChannelName());
+
+        state.ApplyJson("""{ "type": "channelCreated", "payload": { "connectionId": 1, "channelId": 7, "parentId": "5", "properties": { "name": "Novo" } } }""");
+        state.ApplyJson("""{ "type": "clientMoved", "payload": { "connectionId": 1, "clientId": 10, "newChannelId": 7 } }""");
+        Assert.Equal("Novo", state.GetMyChannelName());
+    }
+
+    [Fact]
+    public void Channel_name_is_null_without_a_server()
+    {
+        var state = CreateState();
+        state.ApplyJson("""{ "type": "channels", "payload": { "connectionId": 1, "info": { "rootChannels": [{ "id": 5, "properties": { "name": "Lobby" } }] } } }""");
+
+        state.ApplyJson("""{ "type": "connectStatusChanged", "payload": { "connectionId": 1, "status": 0 } }""");
+        Assert.Null(state.GetMyChannelName());
+    }
 }

@@ -98,6 +98,9 @@
             <!-- No lado direito da tela vira RightToLeft: foto à direita e nome encostado na borda.
                  Os textos ficam LeftToRight para a pontuação dos nomes não trocar de lugar -->
             <StackPanel x:Name="ListPanel" Effect="{StaticResource TextOutline}">
+                <!-- Nome do canal em que estou, sem o do servidor -->
+                <TextBlock x:Name="ChannelName" Foreground="#F2F3F5" FontSize="13" FontWeight="SemiBold" Margin="0,0,0,4"
+                           TextTrimming="CharacterEllipsis" FlowDirection="LeftToRight" HorizontalAlignment="Left" />
                 <TextBlock x:Name="StatusText" Foreground="#B5BAC1" FontSize="12" TextWrapping="Wrap"
                            FlowDirection="LeftToRight" HorizontalAlignment="Left" />
                 <ItemsControl x:Name="ClientList" ItemTemplate="{StaticResource ClientTemplate}" />

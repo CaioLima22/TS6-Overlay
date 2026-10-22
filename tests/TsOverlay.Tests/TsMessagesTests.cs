@@ -24,4 +24,15 @@ public class TsMessagesTests
     {
         Assert.Null(TsMessages.ParseMyTeamSpeakAvatar(raw));
     }
+
+    [Theory]
+    [InlineData("Lobby", "Lobby")]
+    [InlineData("[cspacer]Geral", "Geral")]
+    [InlineData("[*spacer1]---", "---")]
+    [InlineData("[rspacer3] AFK ", "AFK")]
+    [InlineData("[Time A] Ranked", "[Time A] Ranked")]
+    public void Channel_name_hides_spacer_markup(string raw, string expected)
+    {
+        Assert.Equal(expected, TsMessages.CleanChannelName(raw));
+    }
 }
