@@ -46,6 +46,36 @@ public class ChannelStateTests
     }
 
     [Fact]
+    public void Server_query_clients_are_hidden()
+    {
+        var state = CreateState();
+
+        // O TS não mostra clientes ServerQuery, mas a API manda (type 1)
+        state.ApplyJson("""{ "type": "clientMoved", "payload": { "connectionId": 1, "clientId": 13, "newChannelId": 5,
+              "properties": { "nickname": "serveradmin", "type": 1 } } }""");
+        Assert.Equal(new[] { "Ana", "Caio" }, Names(state));
+
+        // E quando sai não vira "último que saiu"
+        state.ApplyJson("""{ "type": "clientMoved", "payload": { "connectionId": 1, "clientId": 13, "newChannelId": 6 } }""");
+        Assert.Null(state.GetLastLeft());
+
+        // type 0 é cliente normal
+        state.ApplyJson("""{ "type": "clientMoved", "payload": { "connectionId": 1, "clientId": 14, "newChannelId": 5,
+              "properties": { "nickname": "Duda", "type": 0 } } }""");
+        Assert.Equal(new[] { "Ana", "Caio", "Duda" }, Names(state));
+    }
+
+    [Fact]
+    public void Server_query_clients_from_auth_are_hidden()
+    {
+        var state = new ChannelState();
+        state.ApplyJson(Auth.Replace("""{ "id": "12", "channelId": 6, "properties": { "nickname": "Beto" } }""",
+            """{ "id": "12", "channelId": 5, "properties": { "nickname": "serveradmin", "type": "1" } }"""));
+
+        Assert.Equal(new[] { "Ana", "Caio" }, Names(state));
+    }
+
+    [Fact]
     public void Talk_status_lights_and_clears_the_name()
     {
         var state = CreateState();

@@ -22,4 +22,11 @@ public static class OverlayRules
             TsConnectionStatus.Connecting => hasApiKey, // TS fechado depois de já configurado
             _ => false, // esperando aprovação: o aviso precisa aparecer
         };
+
+    /// <summary>
+    /// Overlay na metade direita do monitor: a lista fica espelhada (foto à direita, nome
+    /// encostado na borda) para não sobrar espaço vazio entre os nomes e a borda da tela.
+    /// </summary>
+    public static bool IsOnRightSide(double windowLeft, double windowWidth, double monitorLeft, double monitorWidth) =>
+        windowLeft + windowWidth / 2 > monitorLeft + monitorWidth / 2;
 }

@@ -36,6 +36,17 @@ internal static class Win32
     [return: MarshalAs(UnmanagedType.Bool)]
     public static extern bool UnregisterHotKey(IntPtr hWnd, int id);
 
+    [StructLayout(LayoutKind.Sequential)]
+    public struct RECT
+    {
+        public int Left, Top, Right, Bottom;
+    }
+
+    /// <summary>Posição da janela em pixels físicos, a mesma unidade do Screen do WinForms.</summary>
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool GetWindowRect(IntPtr hWnd, out RECT rect);
+
     /// <summary>Liga ou desliga bits do estilo estendido da janela.</summary>
     public static void SetExStyle(IntPtr hwnd, int flags, bool enabled)
     {

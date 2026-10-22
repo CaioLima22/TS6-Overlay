@@ -20,6 +20,19 @@ public class OverlayRulesTests
         Assert.Equal("Ana", Assert.Single(OverlayRules.FilterClients(clients, onlyTalking: true)).Nickname);
     }
 
+    [Theory]
+    [InlineData(20, false)]      // encostado à esquerda
+    [InlineData(1640, true)]     // encostado à direita
+    [InlineData(840, true)]      // centro da janela passou do meio da tela
+    [InlineData(820, false)]
+    [InlineData(1940, false)]    // segundo monitor, lado esquerdo
+    [InlineData(3500, true)]     // segundo monitor, lado direito
+    public void Right_side_is_decided_by_the_window_center(double left, bool expected)
+    {
+        var monitorLeft = left >= 1920 ? 1920 : 0;
+        Assert.Equal(expected, OverlayRules.IsOnRightSide(left, 260, monitorLeft, 1920));
+    }
+
     [Fact]
     public void Only_talking_survives_a_restart()
     {
