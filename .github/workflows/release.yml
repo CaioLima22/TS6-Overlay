@@ -22,12 +22,18 @@ jobs:
         shell: pwsh
         run: |
           $version = "${{ github.ref_name }}".TrimStart("v")
-          "VERSION=$version" >> $env:GITHUB_ENV
+          # Tag fora do formato (ex.: "v.0.1.8") quebra o restore do NuGet sem mensagem nenhuma
+          if ($version -notmatch '^\d+\.\d+\.\d+$') {
+            Write-Host "::error::A tag precisa ser no formato v1.2.3 (veio '${{ github.ref_name }}')"
+            exit 1
+          }
+          # Não chamar de VERSION: o MSBuild lê variáveis de ambiente como propriedades
+          "APP_VERSION=$version" >> $env:GITHUB_ENV
 
       - run: dotnet test tests/TsOverlay.Tests -c Release
 
       - name: Publicar
-        run: dotnet publish src/TsOverlay -c Release -r win-x64 --self-contained -p:Version=${{ env.VERSION }} -o publish
+        run: dotnet publish src/TsOverlay -c Release -r win-x64 --self-contained -p:Version=${{ env.APP_VERSION }} -o publish
 
       - run: dotnet tool install -g vpk --version 1.2.161
 
@@ -39,7 +45,7 @@ jobs:
           if ($LASTEXITCODE -ne 0) { Write-Host "Sem release anterior"; exit 0 }
 
       - name: Empacotar
-        run: vpk pack -u TsOverlay -v ${{ env.VERSION }} -p publish -e TsOverlay.exe --packTitle "TS Overlay" --packAuthors "Caio" --icon src/TsOverlay/Assets/app.ico
+        run: vpk pack -u TsOverlay -v ${{ env.APP_VERSION }} -p publish -e TsOverlay.exe --packTitle "TS Overlay" --packAuthors "Caio" --icon src/TsOverlay/Assets/app.ico
 
       - name: Enviar para o GitHub
-        run: vpk upload github --repoUrl "${{ github.server_url }}/${{ github.repository }}" --token "${{ secrets.GITHUB_TOKEN }}" --publish --releaseName "TS Overlay ${{ env.VERSION }}" --tag "${{ github.ref_name }}"
+        run: vpk upload github --repoUrl "${{ github.server_url }}/${{ github.repository }}" --token "${{ secrets.GITHUB_TOKEN }}" --publish --releaseName "TS Overlay ${{ env.APP_VERSION }}" --tag "${{ github.ref_name }}"
