@@ -81,6 +81,9 @@ public partial class OverlayWindow : Window
 
         // Sem atalho não teria como destravar, então começa destravado
         ApplyLocked(_settings.Locked && _lock.Registered);
+
+        UpdateSide();
+        LocationChanged += (_, _) => UpdateSide();
     }
 
     protected override void OnClosed(EventArgs e)
@@ -175,6 +178,15 @@ public partial class OverlayWindow : Window
             Left = SystemParameters.WorkArea.Left + 20;
             Top = SystemParameters.WorkArea.Top + 20;
         }
+    }
+
+    /// <summary>Espelha a lista quando o overlay está na metade direita do monitor em que ele está.</summary>
+    private void UpdateSide()
+    {
+        if (_hwnd == IntPtr.Zero || !Win32.GetWindowRect(_hwnd, out var rect)) return;
+        var monitor = System.Windows.Forms.Screen.FromHandle(_hwnd).Bounds;
+        var right = OverlayRules.IsOnRightSide(rect.Left, rect.Right - rect.Left, monitor.Left, monitor.Width);
+        ListPanel.FlowDirection = right ? FlowDirection.RightToLeft : FlowDirection.LeftToRight;
     }
 
     private void SaveSettings()

@@ -26,7 +26,8 @@
                     <!-- Segoe MDL2 Assets: E77B = pessoa -->
                     <TextBlock Text="&#xE77B;" FontFamily="Segoe MDL2 Assets" FontSize="12" Foreground="#B5BAC1"
                                HorizontalAlignment="Center" VerticalAlignment="Center" />
-                    <Image Width="22" Height="22" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"
+                    <!-- Imagem dentro da lista espelhada também seria espelhada; a foto fica sempre igual -->
+                    <Image FlowDirection="LeftToRight" Width="22" Height="22" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"
                            Source="{Binding AvatarUrl, Converter={StaticResource Avatar}}">
                         <Image.Clip>
                             <EllipseGeometry Center="11,11" RadiusX="11" RadiusY="11" />
@@ -35,7 +36,7 @@
                     <Ellipse x:Name="TalkRing" Width="28" Height="28" Stroke="Transparent" StrokeThickness="2" />
                 </Grid>
                 <TextBlock x:Name="Name" Grid.Column="1" Text="{Binding Nickname}" TextTrimming="CharacterEllipsis"
-                           VerticalAlignment="Center" />
+                           FlowDirection="LeftToRight" HorizontalAlignment="Left" VerticalAlignment="Center" />
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
                     <!-- Segoe MDL2 Assets: E720 = microfone, E74F = som mutado -->
                     <TextBlock x:Name="MicMuted" Text="&#xE720;" FontFamily="Segoe MDL2 Assets" Foreground="#F23F43"
@@ -94,8 +95,11 @@
                         HorizontalAlignment="Right" VerticalAlignment="Top" Width="18" Height="18" Padding="0"
                         FontSize="11" Foreground="#949BA4" Background="Transparent" BorderThickness="0" Cursor="Hand" />
             </Grid>
-            <StackPanel Effect="{StaticResource TextOutline}">
-                <TextBlock x:Name="StatusText" Foreground="#B5BAC1" FontSize="12" TextWrapping="Wrap" />
+            <!-- No lado direito da tela vira RightToLeft: foto à direita e nome encostado na borda.
+                 Os textos ficam LeftToRight para a pontuação dos nomes não trocar de lugar -->
+            <StackPanel x:Name="ListPanel" Effect="{StaticResource TextOutline}">
+                <TextBlock x:Name="StatusText" Foreground="#B5BAC1" FontSize="12" TextWrapping="Wrap"
+                           FlowDirection="LeftToRight" HorizontalAlignment="Left" />
                 <ItemsControl x:Name="ClientList" ItemTemplate="{StaticResource ClientTemplate}" />
                 <!-- Último que saiu do canal: apagado e riscado -->
                 <Grid x:Name="LastLeftRow" Margin="0,1" Opacity="0.45" ToolTip="Último que saiu do canal">
@@ -107,7 +111,7 @@
                         <Ellipse Width="22" Height="22" Stroke="#80848E" StrokeThickness="1.5" />
                     </Grid>
                     <TextBlock x:Name="LastLeftName" Grid.Column="1" TextDecorations="Strikethrough" TextTrimming="CharacterEllipsis"
-                               VerticalAlignment="Center" />
+                               FlowDirection="LeftToRight" HorizontalAlignment="Left" VerticalAlignment="Center" />
                 </Grid>
             </StackPanel>
         </StackPanel>
