@@ -8,4 +8,5 @@ public sealed record ClientInfo(
     bool IsTalking,
     bool InputMuted,
     bool OutputMuted,
-    bool IsMe);
+    bool IsMe,
+    string? AvatarUrl = null);

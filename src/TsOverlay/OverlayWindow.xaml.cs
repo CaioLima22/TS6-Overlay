@@ -42,6 +42,7 @@ public partial class OverlayWindow : Window
 
         _state.Changed += QueueRefresh;
         _client.StatusChanged += _ => QueueRefresh();
+        AvatarCache.Instance.Changed += QueueRefresh;
         Refresh();
     }
 

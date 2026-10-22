@@ -18,6 +18,7 @@ public sealed class ChannelState
         public bool Talking { get; set; }
         public bool InputMuted { get; set; }
         public bool OutputMuted { get; set; }
+        public string? AvatarUrl { get; set; }
     }
 
     private sealed class Connection
@@ -59,7 +60,7 @@ public sealed class ChannelState
             return conn.Clients.Values
                 .Where(c => c.ChannelId == me.ChannelId)
                 .OrderBy(c => c.Nickname, StringComparer.CurrentCultureIgnoreCase)
-                .Select(c => new ClientInfo(conn.Id, c.Id, c.Nickname, c.Talking, c.InputMuted, c.OutputMuted, c.Id == conn.MyClientId))
+                .Select(c => new ClientInfo(conn.Id, c.Id, c.Nickname, c.Talking, c.InputMuted, c.OutputMuted, c.Id == conn.MyClientId, c.AvatarUrl))
                 .ToList();
         }
     }
@@ -278,5 +279,8 @@ public sealed class ChannelState
         if (props.GetString("nickname") is { } nick) client.Nickname = nick;
         if (props.GetBool("inputMuted") is { } inMuted) client.InputMuted = inMuted;
         if (props.GetBool("outputMuted") is { } outMuted) client.OutputMuted = outMuted;
+        // Campo presente mas vazio = tirou a foto; ausente = não mudou
+        if (props.TryGetProperty("myteamspeakAvatar", out _))
+            client.AvatarUrl = TsMessages.ParseMyTeamSpeakAvatar(props.GetString("myteamspeakAvatar"));
     }
 }

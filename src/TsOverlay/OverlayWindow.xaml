@@ -1,6 +1,7 @@
 <Window x:Class="TsOverlay.OverlayWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:TsOverlay"
         Title="TS Overlay"
         Width="260" SizeToContent="Height"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
@@ -9,17 +10,32 @@
     <Window.Resources>
         <!-- Sem fundo, o texto precisa de um contorno escuro para ler sobre qualquer jogo -->
         <DropShadowEffect x:Key="TextOutline" Color="Black" ShadowDepth="0" BlurRadius="4" Opacity="1" />
+        <local:AvatarConverter x:Key="Avatar" />
 
-        <!-- Item da lista: bolinha + nome, com ícones de mute -->
+        <!-- Item da lista: foto + nome, com ícones de mute. Como no TS, quem fala ganha um anel azul na foto -->
         <DataTemplate x:Key="ClientTemplate">
-            <Grid Margin="0,3">
+            <Grid Margin="0,1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <Ellipse x:Name="Dot" Width="10" Height="10" Margin="0,0,8,0" Fill="#80848E" />
-                <TextBlock x:Name="Name" Grid.Column="1" Text="{Binding Nickname}" TextTrimming="CharacterEllipsis" />
+                <Grid Width="28" Height="28" Margin="0,0,8,0">
+                    <!-- Sem foto do myTeamSpeak fica a silhueta padrão do TS -->
+                    <Ellipse Width="22" Height="22" Fill="#4E5058" />
+                    <!-- Segoe MDL2 Assets: E77B = pessoa -->
+                    <TextBlock Text="&#xE77B;" FontFamily="Segoe MDL2 Assets" FontSize="12" Foreground="#B5BAC1"
+                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <Image Width="22" Height="22" Stretch="UniformToFill" RenderOptions.BitmapScalingMode="HighQuality"
+                           Source="{Binding AvatarUrl, Converter={StaticResource Avatar}}">
+                        <Image.Clip>
+                            <EllipseGeometry Center="11,11" RadiusX="11" RadiusY="11" />
+                        </Image.Clip>
+                    </Image>
+                    <Ellipse x:Name="TalkRing" Width="28" Height="28" Stroke="Transparent" StrokeThickness="2" />
+                </Grid>
+                <TextBlock x:Name="Name" Grid.Column="1" Text="{Binding Nickname}" TextTrimming="CharacterEllipsis"
+                           VerticalAlignment="Center" />
                 <StackPanel Grid.Column="2" Orientation="Horizontal">
                     <!-- Segoe MDL2 Assets: E720 = microfone, E74F = som mutado -->
                     <TextBlock x:Name="MicMuted" Text="&#xE720;" FontFamily="Segoe MDL2 Assets" Foreground="#F23F43"
@@ -30,7 +46,7 @@
             </Grid>
             <DataTemplate.Triggers>
                 <DataTrigger Binding="{Binding IsTalking}" Value="True">
-                    <Setter TargetName="Dot" Property="Fill" Value="#23A55A" />
+                    <Setter TargetName="TalkRing" Property="Stroke" Value="#2D8CFF" />
                     <Setter TargetName="Name" Property="Foreground" Value="#FFFFFF" />
                     <Setter TargetName="Name" Property="FontWeight" Value="SemiBold" />
                 </DataTrigger>
@@ -70,13 +86,16 @@
                 <TextBlock x:Name="StatusText" Foreground="#B5BAC1" FontSize="12" TextWrapping="Wrap" />
                 <ItemsControl x:Name="ClientList" ItemTemplate="{StaticResource ClientTemplate}" />
                 <!-- Último que saiu do canal: apagado e riscado -->
-                <Grid x:Name="LastLeftRow" Margin="0,3" Opacity="0.45" ToolTip="Último que saiu do canal">
+                <Grid x:Name="LastLeftRow" Margin="0,1" Opacity="0.45" ToolTip="Último que saiu do canal">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
-                    <Ellipse Width="10" Height="10" Margin="0,0,8,0" Stroke="#80848E" StrokeThickness="1.5" />
-                    <TextBlock x:Name="LastLeftName" Grid.Column="1" TextDecorations="Strikethrough" TextTrimming="CharacterEllipsis" />
+                    <Grid Width="28" Height="28" Margin="0,0,8,0">
+                        <Ellipse Width="22" Height="22" Stroke="#80848E" StrokeThickness="1.5" />
+                    </Grid>
+                    <TextBlock x:Name="LastLeftName" Grid.Column="1" TextDecorations="Strikethrough" TextTrimming="CharacterEllipsis"
+                               VerticalAlignment="Center" />
                 </Grid>
             </StackPanel>
         </StackPanel>
