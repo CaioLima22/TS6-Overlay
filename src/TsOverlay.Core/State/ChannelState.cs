@@ -28,6 +28,7 @@ public sealed class ChannelState
         public required string Id { get; init; }
         public string? MyClientId { get; set; }
         public Dictionary<string, Client> Clients { get; } = new();
+        public Dictionary<string, string> ChannelNames { get; } = new();
         public string? LastLeftClientId { get; set; }
         public string? LastLeftNickname { get; set; }
         public DateTimeOffset LastLeftAt { get; set; }
@@ -77,6 +78,20 @@ public sealed class ChannelState
         }
     }
 
+    /// <summary>Nome do canal em que estou na conexão ativa, ou null se ainda não sei.</summary>
+    public string? GetMyChannelName()
+    {
+        lock (_lock)
+        {
+            if (_activeConnectionId is null || !_connections.TryGetValue(_activeConnectionId, out var conn)
+                || conn.MyChannelId is not { } channelId)
+            {
+                return null;
+            }
+            return conn.ChannelNames.TryGetValue(channelId, out var name) ? name : null;
+        }
+    }
+
     /// <summary>
     /// Último que saiu do meu canal, ou null. Some depois de <see cref="LastLeftDuration"/>,
     /// quando a pessoa volta ou quando eu troco de canal.
@@ -121,6 +136,9 @@ public sealed class ChannelState
                 "clientPropertiesUpdated" => ApplyClientProperties(payload),
                 "connectStatusChanged" => ApplyConnectStatus(payload),
                 "clientSelfPropertyUpdated" => ApplySelfProperty(payload),
+                "channels" => ApplyChannels(payload),
+                // channelCreated é o nome confirmado; os outros cobrem renomear canal, se a API mandar
+                "channelCreated" or "channelEdited" or "channelPropertiesUpdated" or "channelUpdated" => ApplyChannel(payload),
                 _ => false,
             };
         }
@@ -148,6 +166,7 @@ public sealed class ChannelState
             if (c.GetId("id") is not { } connId) continue;
             var conn = new Connection { Id = connId, MyClientId = c.GetId("clientId") };
             _connections[connId] = conn;
+            if (c.Get("channelInfos") is { } channelInfos) ApplyChannelInfos(conn, channelInfos);
 
             foreach (var info in c.GetArray("clientInfos"))
             {
@@ -258,6 +277,48 @@ public sealed class ChannelState
         GetOrAddConnection(connId);
         _activeConnectionId = connId;
         return true;
+    }
+
+    private bool ApplyChannels(JsonElement payload)
+    {
+        if (payload.GetId("connectionId") is not { } connId || payload.Get("info") is not { } info) return false;
+        ApplyChannelInfos(GetOrAddConnection(connId), info);
+        return true;
+    }
+
+    private bool ApplyChannel(JsonElement payload)
+    {
+        if (payload.GetId("connectionId") is not { } connId || payload.GetId("channelId") is not { } channelId
+            || payload.Get("properties") is not { } props || props.GetString("name") is not { } name)
+        {
+            return false;
+        }
+        GetOrAddConnection(connId).ChannelNames[channelId] = TsMessages.CleanChannelName(name);
+        return true;
+    }
+
+    /// <summary>Lista de canais: { rootChannels: [...], subChannels: { "idDoPai": [...] } }.</summary>
+    private static void ApplyChannelInfos(Connection conn, JsonElement channelInfos)
+    {
+        var channels = channelInfos.GetArray("rootChannels");
+        if (channelInfos.Get("subChannels") is { } sub)
+        {
+            channels = sub.ValueKind switch
+            {
+                JsonValueKind.Object => channels.Concat(sub.EnumerateObject().SelectMany(p =>
+                    p.Value.ValueKind == JsonValueKind.Array ? p.Value.EnumerateArray() : Enumerable.Empty<JsonElement>())),
+                JsonValueKind.Array => channels.Concat(sub.EnumerateArray()),
+                _ => channels,
+            };
+        }
+
+        foreach (var channel in channels)
+        {
+            if (channel.GetId("id") is { } id && channel.Get("properties")?.GetString("name") is { } name)
+            {
+                conn.ChannelNames[id] = TsMessages.CleanChannelName(name);
+            }
+        }
     }
 
     private Client? FindClient(JsonElement payload)

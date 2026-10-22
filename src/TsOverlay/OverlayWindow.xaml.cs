@@ -340,6 +340,9 @@ public partial class OverlayWindow : Window
         }
 
         var inServer = allClients.Count > 0;
+        var channelName = inServer ? _state.GetMyChannelName() : null;
+        ChannelName.Text = channelName ?? "";
+        ChannelName.Visibility = string.IsNullOrEmpty(channelName) ? Visibility.Collapsed : Visibility.Visible;
         StatusText.Text = _client.Status switch
         {
             TsConnectionStatus.Connecting => "Procurando o TeamSpeak... Confira se Remote Apps está ativado nas configurações.",
