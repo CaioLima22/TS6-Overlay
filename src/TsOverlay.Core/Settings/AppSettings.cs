@@ -34,11 +34,19 @@ public sealed class AppSettings
     /// <summary>Atalho global que trava e destrava, no formato "Ctrl+Shift+O".</summary>
     public string LockHotkey { get; set; } = Hotkey.Default.ToString();
 
+    /// <summary>Atalho global que oculta e mostra o overlay.</summary>
+    public string HideHotkey { get; set; } = Hotkey.DefaultHide.ToString();
+
     /// <summary>Mostra só quem está falando em vez do canal inteiro.</summary>
     public bool OnlyTalking { get; set; }
 
+    /// <summary>Some sozinho enquanto o TS não estiver conectado a nenhum servidor.</summary>
+    public bool AutoHideWhenNoServer { get; set; } = true;
+
     /// <summary>O atalho salvo, ou o padrão se o texto for inválido.</summary>
     public Hotkey GetLockHotkey() => Hotkey.TryParse(LockHotkey, out var hotkey) ? hotkey : Hotkey.Default;
+
+    public Hotkey GetHideHotkey() => Hotkey.TryParse(HideHotkey, out var hotkey) ? hotkey : Hotkey.DefaultHide;
 
     public const double MinOpacity = 0.2;
 
