@@ -51,8 +51,7 @@ public class ChannelStateTests
         var state = CreateState();
 
         // O TS não mostra clientes ServerQuery, mas a API manda (type 1)
-        state.ApplyJson("""{ "type": "clientMoved", "payload": { "connectionId": 1, "clientId": 13, "newChannelId": 5,
-              "properties": { "nickname": "serveradmin", "type": 1 } } }""");
+        state.ApplyJson("""{ "type": "clientMoved", "payload": { "connectionId": 1, "clientId": 13, "newChannelId": 5, "properties": { "nickname": "serveradmin", "type": 1 } } }""");
         Assert.Equal(new[] { "Ana", "Caio" }, Names(state));
 
         // E quando sai não vira "último que saiu"
@@ -60,8 +59,7 @@ public class ChannelStateTests
         Assert.Null(state.GetLastLeft());
 
         // type 0 é cliente normal
-        state.ApplyJson("""{ "type": "clientMoved", "payload": { "connectionId": 1, "clientId": 14, "newChannelId": 5,
-              "properties": { "nickname": "Duda", "type": 0 } } }""");
+        state.ApplyJson("""{ "type": "clientMoved", "payload": { "connectionId": 1, "clientId": 14, "newChannelId": 5, "properties": { "nickname": "Duda", "type": 0 } } }""");
         Assert.Equal(new[] { "Ana", "Caio", "Duda" }, Names(state));
     }
 
