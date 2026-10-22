@@ -1,5 +1,4 @@
 using System.Drawing;
-using System.Drawing.Drawing2D;
 using System.Windows.Forms;
 using TsOverlay.Core.Settings;
 using TsOverlay.Native;
@@ -128,22 +127,11 @@ internal sealed class TrayIcon : IDisposable
         return item;
     }
 
-    /// <summary>Bolinha azul com um ponto verde, desenhada na hora para não depender de .ico.</summary>
+    /// <summary>O mesmo ícone do .exe, no tamanho que o Windows usa na bandeja.</summary>
     private static Icon CreateIcon()
     {
-        using var bitmap = new Bitmap(32, 32);
-        using (var g = Graphics.FromImage(bitmap))
-        {
-            g.SmoothingMode = SmoothingMode.AntiAlias;
-            using var blue = new SolidBrush(Color.FromArgb(0x58, 0x65, 0xF2));
-            using var green = new SolidBrush(Color.FromArgb(0x23, 0xA5, 0x5A));
-            using var white = new SolidBrush(Color.White);
-            g.FillEllipse(blue, 1, 1, 30, 30);
-            g.FillRectangle(white, 8, 10, 16, 3);
-            g.FillRectangle(white, 8, 16, 11, 3);
-            g.FillEllipse(green, 19, 19, 11, 11);
-        }
-        return Icon.FromHandle(bitmap.GetHicon());
+        using var stream = typeof(TrayIcon).Assembly.GetManifestResourceStream("TsOverlay.app.ico")!;
+        return new Icon(stream, SystemInformation.SmallIconSize);
     }
 
     public void Dispose()

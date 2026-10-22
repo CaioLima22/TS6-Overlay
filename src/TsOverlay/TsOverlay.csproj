@@ -12,7 +12,14 @@
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
     <AssemblyName>TsOverlay</AssemblyName>
     <Version>0.1.0</Version>
+    <!-- Ícone do .exe; o Velopack usa o mesmo nos atalhos da área de trabalho e do menu Iniciar -->
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Embutido para a bandeja pegar o tamanho certo (16 px) em vez de reduzir o de 32 -->
+    <EmbeddedResource Include="Assets\app.ico" LogicalName="TsOverlay.app.ico" />
+  </ItemGroup>
 
   <ItemGroup>
     <!-- Evita conflito de nomes entre WPF e WinForms (Application, Button, Brush...) -->
